@@ -65,7 +65,10 @@ namespace EVARefueling
         
         override public void OnFixedUpdate()
         {
-            
+            if (connectedPump != null)
+            {
+                UnityEngine.Debug.Log((part.orgPos - connectedPump.part.orgPos).magnitude);
+            }
         }
     }
 }
