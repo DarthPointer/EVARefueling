@@ -71,7 +71,7 @@ namespace EVARefueling
                 Debug.Log($"is awaiting: {awaitingPump == this}");
                 if (connectedPump != null)
                 {
-                    Debug.Log($"[EVARefueling] {(part.orgPos - connectedPump.part.orgPos).magnitude}");
+                    Debug.Log($"[EVARefueling] {(part.transform.position - connectedPump.part.transform.position).magnitude}");
                 }
             }
         }
