@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace EVARefueling
 {
@@ -14,12 +11,14 @@ namespace EVARefueling
         EVARefuelingPump connectedPump;
 
         [KSPField(isPersistant = true, guiActive = false)]
-        readonly string resourcePumpingRates = "";
+        public string resourcePumpingRates = "";
 
         Dictionary<string, float> resourcePumpingRatesDict = new Dictionary<string, float>();               // resource name: units per sec
 
         [KSPField(isPersistant = true, guiActive = false)]
-        readonly bool isEVASide = false;
+        public bool isEVASide = false;
+
+        float debugTimeout = 0;
 
         [KSPEvent(guiActive = true, guiName = "Find Pumping Counterpart")]
         public void FindPumpingCounterPart()
@@ -63,11 +62,17 @@ namespace EVARefueling
             Events["CutConnection"].guiActive = false;
         }
         
-        override public void OnFixedUpdate()
+        public void FixedUpdate()
         {
-            if (connectedPump != null)
+            if (Time.time > debugTimeout + 5)
             {
-                UnityEngine.Debug.Log((part.orgPos - connectedPump.part.orgPos).magnitude);
+                debugTimeout = Time.time + 5;
+                Debug.Log($"isEVASide: {isEVASide}");
+                Debug.Log($"is awaiting: {awaitingPump == this}");
+                if (connectedPump != null)
+                {
+                    Debug.Log($"[EVARefueling] {(part.orgPos - connectedPump.part.orgPos).magnitude}");
+                }
             }
         }
     }
