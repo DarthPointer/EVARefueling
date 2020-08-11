@@ -23,7 +23,7 @@ namespace EVARefueling
         float nextDebugAt = 0;
 
         #region Events
-        [KSPEvent(guiActive = true, guiName = "Find Pumping Counterpart", guiActiveUnfocused = true)]
+        [KSPEvent(guiActive = true, guiName = "Find Pumping Counterpart", groupName = "EVARefuelingPump", groupDisplayName = "EVA Refueling", guiActiveUnfocused = true, requireFullControl = false, guiActiveUncommand = true)]
         public void FindPumpingCounterPart()
         {
             if (awaitingPump == null)
@@ -47,7 +47,7 @@ namespace EVARefueling
             Events["CutConnection"].guiActiveUnfocused = true;
         }
 
-        [KSPEvent(guiActive = false, guiName = "Cut Connection", guiActiveUnfocused = false)]
+        [KSPEvent(guiActive = false, guiName = "Cut Connection", groupName = "EVARefuelingPump", groupDisplayName = "EVA Refueling", guiActiveUnfocused = false, requireFullControl = false, guiActiveUncommand = true)]
         public void CutConnection()
         {
             if (connectedPump != null)
@@ -99,26 +99,118 @@ namespace EVARefueling
                 if (part.Resources.Contains(resourceName) && connectedPump.part.Resources.Contains(resourceName))
                 {
                     KSPEvent attributeHolder = new KSPEvent();
+                    #region Setting Attribs
                     attributeHolder.guiActive = true;
                     attributeHolder.guiName = $"Pump {part.Resources[resourceName].info.displayName} here";
                     attributeHolder.groupName = "EVARefuelingPump";
                     attributeHolder.groupDisplayName = "EVA Refueling";
+                    attributeHolder.guiActiveUnfocused = true;
+                    attributeHolder.requireFullControl = false;
+                    attributeHolder.guiActiveUncommand = true;
+                    #endregion
                     Events.Add(new BaseEvent(Events, $"InPump_{resourceName}", () =>
                     {
                         activeResourcePumpingRatedDict[resourceName] = rPRD[resourceName];
                         connectedPump.activeResourcePumpingRatedDict[resourceName] = -rPRD[resourceName];
+
+                        Events[$"InPump_{resourceName}"].guiActive = false;
+                        Events[$"InPump_{resourceName}"].guiActiveUnfocused = false;
+
+                        Events[$"StopPump_{resourceName}"].guiActive = true;
+                        Events[$"StopPump_{resourceName}"].guiActiveUnfocused = true;
+
+                        connectedPump.Events[$"InPump_{resourceName}"].guiActive = true;
+                        connectedPump.Events[$"InPump_{resourceName}"].guiActiveUnfocused = true;
+
+                        connectedPump.Events[$"StopPump_{resourceName}"].guiActive = true;
+                        connectedPump.Events[$"StopPump_{resourceName}"].guiActiveUnfocused = true;
                     },
                     attributeHolder));
 
                     attributeHolder = new KSPEvent();
+                    #region Setting Attribs
                     attributeHolder.guiActive = true;
                     attributeHolder.guiName = $"Pump {part.Resources[resourceName].info.displayName} here";
                     attributeHolder.groupName = "EVARefuelingPump";
                     attributeHolder.groupDisplayName = "EVA Refueling";
+                    attributeHolder.guiActiveUnfocused = true;
+                    attributeHolder.requireFullControl = false;
+                    attributeHolder.guiActiveUncommand = true;
+                    #endregion
                     connectedPump.Events.Add(new BaseEvent(connectedPump.Events, $"InPump_{resourceName}", () =>
                     {
                         connectedPump.activeResourcePumpingRatedDict[resourceName] = rPRD[resourceName];
                         activeResourcePumpingRatedDict[resourceName] = -rPRD[resourceName];
+
+                        Events[$"InPump_{resourceName}"].guiActive = true;
+                        Events[$"InPump_{resourceName}"].guiActiveUnfocused = true;
+
+                        Events[$"StopPump_{resourceName}"].guiActive = true;
+                        Events[$"StopPump_{resourceName}"].guiActiveUnfocused = true;
+
+                        connectedPump.Events[$"InPump_{resourceName}"].guiActive = false;
+                        connectedPump.Events[$"InPump_{resourceName}"].guiActiveUnfocused = false;
+
+                        connectedPump.Events[$"StopPump_{resourceName}"].guiActive = true;
+                        connectedPump.Events[$"StopPump_{resourceName}"].guiActiveUnfocused = true;
+                    },
+                    attributeHolder));
+
+                    attributeHolder = new KSPEvent();
+                    #region Setting Attribs
+                    attributeHolder.guiActive = true;
+                    attributeHolder.guiName = $"Stop Pumping {part.Resources[resourceName].info.displayName}";
+                    attributeHolder.groupName = "EVARefuelingPump";
+                    attributeHolder.groupDisplayName = "EVA Refueling";
+                    attributeHolder.guiActiveUnfocused = true;
+                    attributeHolder.requireFullControl = false;
+                    attributeHolder.guiActiveUncommand = true;
+                    #endregion
+                    Events.Add(new BaseEvent(Events, $"StopPump_{resourceName}", () =>
+                    {
+                        connectedPump.activeResourcePumpingRatedDict[resourceName] = 0;
+                        activeResourcePumpingRatedDict[resourceName] = 0;
+
+                        Events[$"InPump_{resourceName}"].guiActive = true;
+                        Events[$"InPump_{resourceName}"].guiActiveUnfocused = true;
+
+                        Events[$"StopPump_{resourceName}"].guiActive = false;
+                        Events[$"StopPump_{resourceName}"].guiActiveUnfocused = false;
+
+                        connectedPump.Events[$"InPump_{resourceName}"].guiActive = true;
+                        connectedPump.Events[$"InPump_{resourceName}"].guiActiveUnfocused = true;
+
+                        connectedPump.Events[$"StopPump_{resourceName}"].guiActive = false;
+                        connectedPump.Events[$"StopPump_{resourceName}"].guiActiveUnfocused = false;
+                    },
+                    attributeHolder));
+
+                    attributeHolder = new KSPEvent();
+                    #region Setting Attribs
+                    attributeHolder.guiActive = true;
+                    attributeHolder.guiName = $"Stop Pumping {part.Resources[resourceName].info.displayName}";
+                    attributeHolder.groupName = "EVARefuelingPump";
+                    attributeHolder.groupDisplayName = "EVA Refueling";
+                    attributeHolder.guiActiveUnfocused = true;
+                    attributeHolder.requireFullControl = false;
+                    attributeHolder.guiActiveUncommand = true;
+                    #endregion
+                    connectedPump.Events.Add(new BaseEvent(connectedPump.Events, $"StopPump_{resourceName}", () =>
+                    {
+                        connectedPump.activeResourcePumpingRatedDict[resourceName] = 0;
+                        activeResourcePumpingRatedDict[resourceName] = 0;
+
+                        Events[$"InPump_{resourceName}"].guiActive = true;
+                        Events[$"InPump_{resourceName}"].guiActiveUnfocused = true;
+
+                        Events[$"StopPump_{resourceName}"].guiActive = false;
+                        Events[$"StopPump_{resourceName}"].guiActiveUnfocused = false;
+
+                        connectedPump.Events[$"InPump_{resourceName}"].guiActive = true;
+                        connectedPump.Events[$"InPump_{resourceName}"].guiActiveUnfocused = true;
+
+                        connectedPump.Events[$"StopPump_{resourceName}"].guiActive = false;
+                        connectedPump.Events[$"StopPump_{resourceName}"].guiActiveUnfocused = false;
                     },
                     attributeHolder));
                 }
