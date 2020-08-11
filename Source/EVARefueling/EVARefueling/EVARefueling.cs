@@ -6,14 +6,16 @@ namespace EVARefueling
     public class EVARefuelingPump : PartModule, ISerializationCallbackReceiver
     {
         public static EVARefuelingPump awaitingPump;
-        static Dictionary<string, float> copiedRPRDict;
+        static Dictionary<string, float> copiedRPRDict;     // Stores the dictionary to avoid data loss on reserialization
 
         EVARefuelingPump connectedPump;
+        bool connected = false;
 
         [KSPField(isPersistant = true, guiActive = false)]
         public string resourcePumpingRates = "";
 
         Dictionary<string, float> resourcePumpingRatesDict = new Dictionary<string, float>();               // resource name: units per sec
+        Dictionary<string, float> activeResourcePumpingRatedDict = new Dictionary<string, float>();
 
         [KSPField(isPersistant = true, guiActive = false)]
         public bool isEVASide = false;
@@ -30,9 +32,7 @@ namespace EVARefueling
             }
             else if (awaitingPump.isEVASide != isEVASide)
             {
-                awaitingPump.connectedPump = this;
-                connectedPump = awaitingPump;
-                awaitingPump = null;
+                EngagePumpPair();
             }
             else
             {
@@ -68,19 +68,75 @@ namespace EVARefueling
                 awaitingPump = null;
             }
 
+            connected = false;
+
             Events["FindPumpingCounterPart"].guiActive = true;
             Events["FindPumpingCounterPart"].guiActiveUnfocused = true;
 
             Events["CutConnection"].guiActive = false;
             Events["CutConnection"].guiActiveUnfocused = false;
         }
+
+        void ActivatePump(string resourceName, float rate)                      // Positive rates for pumping into this.part, negative for puming from this.part
+        {
+            activeResourcePumpingRatedDict[resourceName] = rate;
+        }
+
+        void EngagePumpPair()
+        {
+            awaitingPump.connectedPump = this;
+            awaitingPump.connected = true;
+
+            connectedPump = awaitingPump;
+            connected = true;
+
+            awaitingPump = null;
+
+            Dictionary<string, float> rPRD = isEVASide ? connectedPump.resourcePumpingRatesDict : resourcePumpingRatesDict;
+
+            foreach (string resourceName in rPRD.Keys)
+            {
+                if (part.Resources.Contains(resourceName) && connectedPump.part.Resources.Contains(resourceName))
+                {
+                    KSPEvent attributeHolder = new KSPEvent();
+                    attributeHolder.guiActive = true;
+                    attributeHolder.guiName = $"Pump {part.Resources[resourceName].info.displayName} here";
+                    attributeHolder.groupName = "EVARefuelingPump";
+                    attributeHolder.groupDisplayName = "EVA Refueling";
+                    Events.Add(new BaseEvent(Events, $"InPump_{resourceName}", () =>
+                    {
+                        activeResourcePumpingRatedDict[resourceName] = rPRD[resourceName];
+                        connectedPump.activeResourcePumpingRatedDict[resourceName] = -rPRD[resourceName];
+                    },
+                    attributeHolder));
+
+                    attributeHolder = new KSPEvent();
+                    attributeHolder.guiActive = true;
+                    attributeHolder.guiName = $"Pump {part.Resources[resourceName].info.displayName} here";
+                    attributeHolder.groupName = "EVARefuelingPump";
+                    attributeHolder.groupDisplayName = "EVA Refueling";
+                    connectedPump.Events.Add(new BaseEvent(connectedPump.Events, $"InPump_{resourceName}", () =>
+                    {
+                        connectedPump.activeResourcePumpingRatedDict[resourceName] = rPRD[resourceName];
+                        activeResourcePumpingRatedDict[resourceName] = -rPRD[resourceName];
+                    },
+                    attributeHolder));
+                }
+            }
+        }
         #endregion
 
         #region PartModule
+        public override void OnStart(StartState state)
+        {
+            if (state != StartState.Editor)
+            {
+            }
+        }
+
         public override void OnLoad(ConfigNode node)
         {
             base.OnLoad(node);
-            print("lol");
             Debug.Log($"[EVARefueling] Module node has \"PUMPING_RATES\" node: {node.HasNode("PUMPING_RATES")}");
             if (node.HasNode("PUMPING_RATES"))
             {
@@ -92,12 +148,6 @@ namespace EVARefueling
                 Debug.Log($"[EVARefueling] Loaded rate {val.name} = {val.value}");
             }
             Debug.Log($"[EVARefueling] Rates count: {resourcePumpingRatesDict.Count}");
-        }
-
-        public override void OnCopy(PartModule fromModule)
-        {
-            base.OnCopy(fromModule);
-            resourcePumpingRatesDict = (fromModule as EVARefuelingPump).resourcePumpingRatesDict;
         }
 
         public override void OnSave(ConfigNode node)
@@ -125,6 +175,14 @@ namespace EVARefueling
                 {
                     //Debug.Log($"[EVARefueling] {(part.transform.position - connectedPump.part.transform.position).magnitude}");
                 }
+            }
+
+            if (connected && connectedPump == null)
+            {
+                connected = false;
+            }
+            if (connectedPump != null)
+            {
             }
         }
         #endregion
