@@ -15,4 +15,4 @@ Some parts (EVAs and pods) are given EVARefuelingPump MODULEs. These MODULES can
 ## Other mods
 
 EVARefueling needs ModuleManager to be any useful (inserting modules into parts - kerbal EVAs and pods).
-Provided configs only let you pump MonoPropellant, Oxygen (CRP-ready) and Tape (useless as of now, planned for "Pay to Play" reliability mod field repairs).
+Provided configs only let you pump MonoPropellant, Oxygen (CRP-ready), ElectricCharge and Tape (useless as of now, planned for "Pay to Play" reliability mod field repairs).
