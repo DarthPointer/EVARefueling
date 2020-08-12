@@ -12,6 +12,9 @@ namespace EVARefueling
         bool connected = false;
 
         [KSPField(isPersistant = true, guiActive = false)]
+        public float pumpingDistanceMeters = 5;
+
+        [KSPField(isPersistant = true, guiActive = false)]
         public string resourcePumpingRates = "";
 
         Dictionary<string, float> resourcePumpingRatesDict = new Dictionary<string, float>();               // resource name: units per sec
@@ -263,8 +266,9 @@ namespace EVARefueling
             {
                 DisengageFromPair();
             }
-            if (connectedPump != null && !isEVASide && (part.transform.position - connectedPump.part.transform.position).magnitude < 2)
+            if (connectedPump != null && !isEVASide && (part.transform.position - connectedPump.part.transform.position).magnitude < pumpingDistanceMeters)
             {
+                List<string> pumpsToStop = new List<string>();
                 Dictionary<string, float>.Enumerator i = activeResourcePumpingRatedDict.GetEnumerator();
                 while (i.MoveNext())
                 {
@@ -282,9 +286,14 @@ namespace EVARefueling
                         }
                         else
                         {
-                            Events[$"StopPump_{i.Current.Key}"].Invoke();
+                            pumpsToStop.Add(i.Current.Key);
                         }
                     }
+                }
+
+                foreach (string resName in pumpsToStop)
+                {
+                    Events[$"StopPump_{resName}"].Invoke();
                 }
             }
         }
