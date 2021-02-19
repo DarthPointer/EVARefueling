@@ -224,8 +224,6 @@ namespace EVARefueling
             Events.RemoveAll((BaseEvent a) => a.name.Contains("Pump_") && a.group.name == "EVARefuelingPump");
             part.Events.RemoveAll((BaseEvent a) => a.name.Contains("Pump_") && a.group.name == "EVARefuelingPump");
             part.PartActionWindow.displayDirty = true;
-
-            Debug.Log($"[EVARefueling] Removed pump switching buttons, {Events.Count} events left in EVARefuelingPump MODULE");
         }
         #endregion
 
@@ -233,22 +231,18 @@ namespace EVARefueling
         public override void OnLoad(ConfigNode node)
         {
             base.OnLoad(node);
-            Debug.Log($"[EVARefueling] Module node has \"PUMPING_RATES\" node: {node.HasNode("PUMPING_RATES")}");
+
             if (node.HasNode("PUMPING_RATES"))
             {
-                Debug.Log($"[EVARefueling] Found {node.GetNode("PUMPING_RATES").values.Count} rates");
+                foreach (ConfigNode.Value val in node.GetNode("PUMPING_RATES").values)
+                {
+                    resourcePumpingRatesDict[val.name] = float.Parse(val.value);
+                }
             }
-            foreach (ConfigNode.Value val in node.GetNode("PUMPING_RATES").values)
-            {
-                resourcePumpingRatesDict[val.name] = float.Parse(val.value);
-                Debug.Log($"[EVARefueling] Loaded rate {val.name} = {val.value}");
-            }
-            Debug.Log($"[EVARefueling] Rates count: {resourcePumpingRatesDict.Count}");
         }
 
         public override void OnSave(ConfigNode node)
         {
-            Debug.Log($"[EVARefueling] Rates count: {resourcePumpingRatesDict.Count}");
             base.OnSave(node);
             ConfigNode pumpingRates = node.AddNode("PUMPING_RATES");
 
@@ -256,7 +250,6 @@ namespace EVARefueling
             while (enumerator.MoveNext())
             {
                 pumpingRates.AddValue(enumerator.Current.Key, enumerator.Current.Value);
-                Debug.Log($"[EVARefueling] Saved rate {enumerator.Current.Key} = {enumerator.Current.Value}");
             }
         }
 

@@ -68,3 +68,4 @@ D:\Repos\EVARefueling\Source\EVARefueling\EVARefueling\obj\Debug\EVARefueling.cs
 D:\Repos\EVARefueling\Source\EVARefueling\EVARefueling\obj\Debug\EVARefueling.csproj.CopyComplete
 D:\Repos\EVARefueling\Source\EVARefueling\EVARefueling\obj\Debug\EVARefueling.dll
 D:\Repos\EVARefueling\Source\EVARefueling\EVARefueling\obj\Debug\EVARefueling.pdb
+D:\Repos\EVARefueling\Source\EVARefueling\EVARefueling\obj\Debug\EVARefueling.csproj.CoreCompileInputs.cache
